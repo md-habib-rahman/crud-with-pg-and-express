@@ -50,12 +50,50 @@ app.get("/", (req: Request, res: Response) => {
 	res.send("Hello Next level developers")
 })
 
-app.post('/', (req: Request, res: Response) => {
-	console.log(req.body)
-	res.status(201).json({
-		success: true,
-		message: "API is working"
-	})
+//all users api
+app.get('/users', async (req: Request, res: Response) => {
+	try {
+		const result = await pool.query(`SELECT * FROM users`);
+		res.status(200).send({
+			success: true,
+			message: "users retrived successfully",
+			data: result.rows
+		})
+
+	} catch (err: any) {
+		res.status(500).json({
+			success: false,
+			message: err.message,
+			details: err
+		})
+	}
+})
+
+//insert users api
+
+app.post('/users', async (req: Request, res: Response) => {
+	const { name, email } = req.body
+	try {
+		const result = await pool.query(`INSERT INTO users(name,email) VALUES($1,$2) RETURNING *`, [name, email])
+		res.status(201).json({
+			success: true,
+			message: "data inserted",
+			data: result.rows[0]
+		})
+
+
+	} catch (err: any) {
+		res.status(500).json({
+			success: false,
+			message: err.message
+		})
+
+	}
+	// console.log(req.body)
+	// res.status(201).json({
+	// 	success: true,
+	// 	message: "API is working"
+	// })
 })
 
 app.listen(port, () => {
