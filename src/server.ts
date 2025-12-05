@@ -200,6 +200,106 @@ app.post('/todos', async (req: Request, res: Response) => {
 
 })
 
+//todos update api
+app.put('/todos/:id', logger, async (req: Request, res: Response) => {
+	const { id } = req.params
+	const { title, description } = req.body
+	try {
+		const result = await pool.query(`UPDATE todos SET title=$1 ,description=$2 where id=$3 RETURNING *`, [title, description, id])
+		// console.log(result)
+
+	} catch (err: any) {
+		res.status(500).send({
+			success: false,
+			message: err.message
+		})
+	}
+})
+
+//get todos api
+app.get('/todos', logger, async (req: Request, res: Response) => {
+	try {
+		const result: any = await pool.query('SELECT * FROM todos')
+		// console.log(result)
+		if (result.rowCount > 0) {
+			res.status(200).send({
+				success: true,
+				message: "todos fetched successfully",
+				data: result.rows
+			})
+		} else {
+			res.status(404).send({
+				success: false,
+				message: "todos not found",
+
+			})
+		}
+
+	} catch (err: any) {
+		res.status(500).send({
+			success: false,
+			message: err.message
+
+		})
+	}
+})
+
+//get single todo api
+app.get('/todos/:id', logger, async (req: Request, res: Response) => {
+	const { id } = req.params
+	try {
+		const result: any = await pool.query(`SELECT * FROM todos WHERE id=$1`, [id])
+		if (result.rowCount > 0) {
+			res.status(200).send({
+				success: false,
+				message: 'todos found',
+				data: result.rows
+			})
+		} else {
+			res.status(404).send({
+				success: false,
+				message: "todo not found",
+
+			})
+		}
+
+	} catch (err: any) {
+		res.status(500).send({
+			success: false,
+			message: err.message
+		})
+
+	}
+})
+
+//remove todo api
+app.delete('/todos/:id', logger, async (req: Request, res: Response) => {
+	const { id } = req.params
+	try {
+		const result: any = await pool.query('DELETE FROM todos WHERE id=$1 RETURNING *', [id])
+		if (result.rowCount > 0) {
+			res.status(200).send({
+				success: true,
+				message: 'todo deleted successfully',
+				data: result.rows
+			})
+		}else{
+			res.status(200).send({
+				success: false,
+				message: 'todo not found',
+				
+			})
+		}
+
+	} catch (err: any) {
+		res.status(500).send({
+			success: false,
+			message: err.message
+		})
+	}
+
+})
+
 app.use((req, res) => {
 	res.status(404).send({
 		success: false,
